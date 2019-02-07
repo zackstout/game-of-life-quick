@@ -28,12 +28,12 @@
             }
 
             // console.log(cells[4], cells[4].neighbors(), cells[4].neighborCells());
-
+            
         }
 
-        function mousePressed() {
-            const x = Math.floor(mouseX / (s/n));
-            const y = Math.floor(mouseY / (s/n));
+        function mouseDragged() {
+            const x = Math.floor(mouseX / (s / n));
+            const y = Math.floor(mouseY / (s / n));
             const cell = findCell(x, y);
             cell.live = !cell.live;
             console.log(cell);
@@ -41,8 +41,11 @@
 
         // Ooooh i feel i ran into this before....we can't change their state until EVERYONE has been updated....
         function generate() {
-            const old_state = cells.map(c => c.live);
+            // const old_state = cells.map(c => c.live);
             cells.forEach(c => c.evolve());
+            cells.forEach(c => {
+                c.live = c.nextLive;
+            });
         }
 
         function findCell(x, y) {
@@ -59,11 +62,17 @@
             cells.forEach(c => c.render());
         }
 
+        function next() {
+            generate();
+            setTimeout(next, 300);
+        }
+
         class Cell {
             constructor(x, y) {
                 this.x = x;
                 this.y = y;
                 this.live = false;
+                this.nextLive = false;
             }
 
             render() {
@@ -93,9 +102,15 @@
             }
 
             evolve() {
-                if (!this.live && this.neighborCells().filter(c => c.live).length === 3) this.live = true;
-                if (this.neighborCells().filter(c => c.live).length < 2) this.live = false;
-                if (this.neighborCells().filter(c => c.live).length > 3) this.live = false;
+                if (!this.live && this.neighborCells().filter(c => c.live).length === 3) this.nextLive = true;
+                if (this.neighborCells().filter(c => c.live).length < 2) {
+                    this.nextLive = false;
+                } else if (this.neighborCells().filter(c => c.live).length > 3) {
+                    this.nextLive = false;
+                } else if (this.live) {
+                    this.nextLive = true;
+                }
+
             }
         }
     </script>
