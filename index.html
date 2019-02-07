@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.3/p5.js"></script>
+    <title>GOL</title>
+</head>
+
+<body>
+
+    <script>
+        const cells = [];
+        const s = 500;
+        const n = 25;
+
+        function setup() {
+
+            createCanvas(s, s);
+
+            for (let i = 0; i < n; i++) {
+                for (let j = 0; j < n; j++) {
+                    const c = new Cell(i, j);
+                    cells.push(c);
+                }
+            }
+
+            // console.log(cells[4], cells[4].neighbors(), cells[4].neighborCells());
+
+        }
+
+        function mousePressed() {
+            const x = Math.floor(mouseX / 100);
+            const y = Math.floor(mouseY / 100);
+            const cell = findCell(x, y);
+            cell.live = !cell.live;
+            console.log(cell);
+        }
+
+        function findCell(x, y) {
+            for (let i = 0; i < cells.length; i++) {
+                if (cells[i].x === x && cells[i].y === y) {
+                    return cells[i];
+                }
+            }
+            return null;
+        }
+
+        function draw() {
+            background(100);
+            cells.forEach(c => c.render());
+        }
+
+        class Cell {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.live = false;
+            }
+
+            render() {
+                const col = this.live ? 'red' : 'blue';
+                fill(col);
+                rect(this.x * s / n, this.y * s / n, s / n, s / n);
+            }
+
+            neighbors() {
+                let result = [];
+                const x_start = Math.max(this.x - 1, 0); // if it's -1 we want 0.
+                const x_end = Math.min(this.x + 1, n - 1); // if it's 5, we want 4.
+                const y_start = Math.max(this.y - 1, 0); // if it's -1 we want 0.
+                const y_end = Math.min(this.y + 1, n - 1);
+                console.log(x_start, x_end, y_start, y_end);
+                for (let i = x_start; i < x_end + 1; i++) {
+                    for (let j = y_start; j < y_end + 1; j++) {
+                        result.push({ x: i, y: j });
+                    }
+                }
+                return result;
+            }
+
+            neighborCells() {
+                return this.neighbors().map(n => findCell(n.x, n.y))
+                    .filter(n => n.x !== this.x || n.y !== this.y); // DM's law ha
+            }
+
+            evolve() {
+                if (!this.live && this.neighborCells().length === 3) this.live = true;
+                if (this.neighborCells().length < 2) this.live = false;
+                if (this.neighborCells().length > 3) this.live = false;
+            }
+        }
+    </script>
+
+</body>
+
+</html>
