@@ -14,10 +14,61 @@
     <script>
         const cells = [];
         const s = 500;
-        const n = 25;
+        const n = 40;
+
+        // Reminds me of doing constellations....damn
+        const glider = [
+            [0, 2],
+            [1, 2],
+            [2, 2],
+            [2, 1],
+            [1, 0]
+        ];
+
+        const fifteener = [
+            [0, 0],
+            [0, 1],
+            [0, 2],
+            [1, 1],
+            [2, 1],
+            [3, 0],
+            [3, 1],
+            [3, 2],
+            [5, 0],
+            [5, 1],
+            [5, 2],
+            [6, 0],
+            [6, 1],
+            [6, 2],
+            [8, 0],
+            [8, 1],
+            [8, 2],
+            [11, 0],
+            [11, 1],
+            [11, 2],
+            [9, 1],
+            [10, 1]
+        ];
+
+        const pentomino = [
+            [0,1],
+            [1,0],
+            [1,1],
+            [1,2],
+            [2,0]
+        ];
+
+        function create(thing, x, y) {
+            const s = thing.map(c => {
+                return findCell(
+                    x + c[0],
+                    y + c[1]
+                );
+            }).forEach(c => c.live = true);
+            // console.log(s);
+        }
 
         function setup() {
-
             createCanvas(s, s);
 
             for (let i = 0; i < n; i++) {
@@ -27,11 +78,15 @@
                 }
             }
 
-            // console.log(cells[4], cells[4].neighbors(), cells[4].neighborCells());
-            
+            // create(glider, 3, 3);
+            // create(fifteener, 5, 5);
+            create(pentomino, 25, 25);
+
+            next();
         }
 
-        function mouseDragged() {
+        // can change to dragged:
+        function mouseClicked() {
             const x = Math.floor(mouseX / (s / n));
             const y = Math.floor(mouseY / (s / n));
             const cell = findCell(x, y);
@@ -41,7 +96,6 @@
 
         // Ooooh i feel i ran into this before....we can't change their state until EVERYONE has been updated....
         function generate() {
-            // const old_state = cells.map(c => c.live);
             cells.forEach(c => c.evolve());
             cells.forEach(c => {
                 c.live = c.nextLive;
@@ -57,13 +111,15 @@
             return null;
         }
 
-        function draw() {
-            background(100);
-            cells.forEach(c => c.render());
-        }
+        // function draw() {
+        //     background(100);
+        //     cells.forEach(c => c.render());
+        // }
 
         function next() {
             generate();
+            background(100);
+            cells.forEach(c => c.render());
             setTimeout(next, 300);
         }
 
@@ -102,11 +158,20 @@
             }
 
             evolve() {
-                if (!this.live && this.neighborCells().filter(c => c.live).length === 3) this.nextLive = true;
+                if (!this.live) {
+                    if (this.neighborCells().filter(c => c.live).length === 3) {
+                        this.nextLive = true;
+                        return;
+                    } else {
+                        return;
+                    }
+                }
                 if (this.neighborCells().filter(c => c.live).length < 2) {
                     this.nextLive = false;
+                    return;
                 } else if (this.neighborCells().filter(c => c.live).length > 3) {
                     this.nextLive = false;
+                    return;
                 } else if (this.live) {
                     this.nextLive = true;
                 }
